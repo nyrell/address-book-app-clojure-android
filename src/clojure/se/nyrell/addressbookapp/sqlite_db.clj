@@ -9,11 +9,11 @@
   (:import android.content.Context)
   (:import neko.data.sqlite.TaggedDatabase))
 
-;;(in-ns 'neko.data.sqlite)
-
 ;; sqlite tutorial: https://www.tutorialspoint.com/sqlite/
 
-;; delete(String table, String whereClause, String[] whereArgs)
+;; SQL delete function implemented like the other functions in neko.data.sqlite
+;;
+;; Java API: delete(String table, String whereClause, String[] whereArgs)
 (defn delete
   [^TaggedDatabase tagged-db table-name where]
   (.delete ^SQLiteDatabase (.db tagged-db)
@@ -22,22 +22,9 @@
            nil))
 (def db-delete delete)
 
-;;(in-ns 'se.nyrell.addressbookapp.sqlite-db)
 
-;;insert(String table, String nullColumnHack, ContentValues values)
-
-;;update(String table, ContentValues values, String whereClause, String[] whereArgs)
-;; (defn update
-;;   [^TaggedDatabase tagged-db table-name set where]
-;;   (.update ^SQLiteDatabase (.db tagged-db)
-;;            (name table-name)
-;;            (map-to-content tagged-db table-name set)
-;;            (where-clause where)
-;;            nil))
-;; (def db-update update)
-
-
-
+;; Dummy "db" variable just to get the ref-wrapper to work.
+;; TODO: Investigate how to do this in a better way.
 (def contact-db
   (atom 0)
   )
@@ -45,24 +32,15 @@
 (defn get-db-atom []
   contact-db)
 
-
 (defn touch-db-atom
-  "This is just to force an update of the GUI"
+  "Do something to the dummy db variable just to force an update of the GUI."
   []
   (swap! (get-db-atom) + 1))
 
-;; (defn get-db []
-;;   contact-db)
 
-;; (defn count-contacts []
-;;   1)
 
-;; (defn add-contact [new-contact]
-;;   contact-db)
-
-;; (defn get-contact-name-list [contact-db]
-;;   ["sqlite"])
-
+;; SQLite functionality below. Mostly inspired by foreclojure.
+;; -----------------------------------------------------------
 
 (def ^:private db-schema
   (let [nntext "text not null"]
@@ -94,7 +72,7 @@
   ([db new-contact]
    (log/d "add-contact()" "new-contact:" new-contact)
    (ndb/insert db :contacts {:name new-contact})
-   (touch-db-atom)
+   (touch-db-atom) ;; Force GUI update
    ))
 
 (defn count-contacts
@@ -104,16 +82,13 @@
    (ndb/query-scalar db ["count" :_id] :contacts nil)))
 
 (defn populate-database [db]
-  (ndb/transact db
-    (add-contact "first-contact")
-    ))
+  (ndb/transact db (add-contact "first-contact")))
 
 (defn delete-all-contacts []
-  (db-delete (get-db) :contacts nil)
-  )
+  (db-delete (get-db) :contacts nil))
 
 (defn initialize
-  "Spins up the database, populates if necessary"
+  "Initialize the database, populates if necessary"
   []
   (let [db (get-db)]
     ;;(delete-all-contacts)
@@ -124,9 +99,7 @@
 (defn get-contact-name-list [contact-db]
   (let [real-contact-db (get-db)
         contact-seq (ndb/query-seq real-contact-db [:contacts/name] [:contacts] nil)]
-    ;;(into [] (for [contact contact-db] (:name contact)))
     (into [] (for [contact contact-seq] (:contacts/name contact)))
-    ;;(list (str (into [] contact-seq)))
+    ;;(list (str (into [] contact-seq))) ;; Just display the db response as a string on a single line
     ))
-
 
