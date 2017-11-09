@@ -1,10 +1,11 @@
 (ns se.nyrell.addressbookapp.sqlite-db
-  (:require ;; [clojure.data.json :as json]
-            ;; [clojure.java.io :as jio]
-            ;; [clojure.string :as str]
-            [neko.data.sqlite :as ndb]
+  (:require [neko.data.sqlite :as ndb]
             [neko.debug :refer [*a]]
-            [neko.log :as log])
+            [neko.log :as log]
+            [neko.find-view :refer [find-view]]
+            [neko.ui :refer [config]]
+            [neko.ui.adapters :refer [ref-adapter]]
+            )
   (:import [android.database.sqlite SQLiteDatabase])
   (:import android.content.Context)
   (:import neko.data.sqlite.TaggedDatabase))
@@ -85,7 +86,8 @@
   (ndb/transact db (add-contact "first-contact")))
 
 (defn delete-all-contacts []
-  (db-delete (get-db) :contacts nil))
+  (db-delete (get-db) :contacts nil)
+  (touch-db-atom))
 
 (defn initialize
   "Initialize the database, populates if necessary"
@@ -103,3 +105,17 @@
     ;;(list (str (into [] contact-seq))) ;; Just display the db response as a string on a single line
     ))
 
+
+
+
+(defn make-contact-list-adapter []
+  (ref-adapter
+   (fn [_] [:linear-layout {:id-holder true}
+            [:text-view {:id ::caption-tv}]])
+   (fn [position view _ data]
+     (let [tv (find-view view ::caption-tv)]
+       ;;(config tv :text (str position ". " data))
+       (config tv :text (str data))
+       ))
+   (get-db-atom)
+   get-contact-name-list))
