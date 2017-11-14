@@ -28,7 +28,7 @@
 (defn delete-all-contacts []
   (reset! contact-db []))
 
-(defn make-contact-list-adapter []
+(defn make-contact-list-adapter [context]
   (ref-adapter
    (fn [_] [:linear-layout {:id-holder true}
             [:text-view {:id ::caption-tv}]])
