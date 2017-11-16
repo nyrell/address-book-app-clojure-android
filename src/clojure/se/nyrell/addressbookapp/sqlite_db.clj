@@ -62,8 +62,9 @@
    (log/d "add-contact()" "contact:" contact)
    (let [contact-id (ndb/insert db :contacts {:name (:name contact)})]
      (doseq [email (:emails contact)]
-       (log/d "add-contact(): email: " email "contact-id: " contact-id)
-       (ndb/insert db :emails {:contact_id contact-id :email email}))
+       (when (not (empty? email))
+         (log/d "add-contact(): email: " email "contact-id: " contact-id)
+         (ndb/insert db :emails {:contact_id contact-id :email email})))
    )))
 
 (defn count-contacts
@@ -117,10 +118,18 @@
 ;;    (get-db-atom)
 ;;    get-contact-name-list))
 
+(defn get-contact-emails [contact-id]
+  (let [emails-seq (ndb/query-seq (get-db) :emails {:contact_id contact-id})]
+    (log/d (str "Contact ID: " contact-id " - Email table: " (into [] emails-seq)))
+    (into [] (for [email emails-seq] (:email email)))
+    ;; (list (str (into [] emails-seq))) ;; Just display the db response as a string on a single line
+    ))
+
 (defn contact-list-cursor-fn []
   (log/d "fn: contact-list-cursor-fn")
   (let [db (get-db)]
-    (ndb/query db :contacts nil)))
+    (ndb/query db :contacts nil)
+    ))
 
 (defn make-contact-list-adapter [context]
   (log/d "fn: make-contact-list-adapter")
@@ -132,8 +141,13 @@
       [:text-view {:id ::caption-tv}]])
    (fn [view _ data]
      (log/d "fn: cursor-adapter: update-view-fn")
-     (let [tv (find-view view ::caption-tv)]
-       (config tv :text (:name data))
+     (let [tv (find-view view ::caption-tv)
+           email-list (get-contact-emails (:_id data))]
+       (log/d "Contact ID:" (:_id data) ", email-list: " email-list ", Empty: " (empty? email-list))
+       (config tv :text
+               (if (empty? email-list)
+                 (:name data)                 
+                 (str (:name data) " (" (clojure.string/join ", " email-list) ")")))
        ))
    (fn []
      (log/d "fn: cursor-fn")

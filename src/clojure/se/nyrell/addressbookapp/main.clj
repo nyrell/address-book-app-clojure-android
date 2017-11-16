@@ -33,7 +33,7 @@
                        (res/get-string R$string/your_input_fmt name-input))
         
         ^EditText email-input (.getText (find-view activity ::input-contact-email))
-        contact-email-csv (if (empty? name-input)
+        contact-email-csv (if (empty? email-input)
                             ""
                             (res/get-string R$string/your_input_fmt email-input))
         contact-emails (for [raw-email (clojure.string/split contact-email-csv #", ")]
@@ -41,6 +41,7 @@
         
         contact-map {:name contact-name :emails contact-emails}
         ]
+    (log/d "Add contact: " contact-map)
     (db/add-contact contact-map)
     (update-cursor (.getAdapter ^ListView (find-view activity ::contact-list-view)))
     ))
