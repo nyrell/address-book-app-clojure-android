@@ -22,7 +22,8 @@
 (defn get-contact-name-list [contact-db]
   (into [] (for [contact contact-db] (:name contact))))
 
-(defn initialize []) ;; Only needed here to match the interface of sqlite_db.clj
+;; Only needed here to match the interface of sqlite_db.clj
+(defn initialize []) 
 
 (defn delete-all-contacts []
   (reset! contact-db []))
