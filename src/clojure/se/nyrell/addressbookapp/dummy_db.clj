@@ -4,7 +4,6 @@
             [neko.ui :refer [config]]
             ))
 
-
 (def contact-db
   (atom [{:name "Kalle"}
          {:name "Olle"}
@@ -15,7 +14,7 @@
   contact-db)
 
 (defn add-contact [new-contact]
-  (swap! contact-db conj {:name new-contact}))
+  (swap! contact-db conj {:name (:name new-contact)}))
 
 (defn count-contacts []
   (count @contact-db))

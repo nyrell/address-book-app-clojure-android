@@ -24,8 +24,6 @@
 (def db-delete delete)
 
 
-
-
 (def ^:private db-schema
   (let [nntext "text not null"]
     (ndb/make-schema
@@ -50,7 +48,7 @@
   (ndb/get-database (get-db-helper) :write))
 
 (defn db-empty?
-  "Returns true if database hasn't been yet populated with any problems."
+  "Returns true if database hasn't been yet populated."
   [db]
   (log/d "fn: db-empty?")
   (zero? (ndb/query-scalar db ["count" :_id] :contacts nil)))
@@ -74,7 +72,6 @@
    (ndb/query-scalar db ["count" :_id] :contacts nil)))
 
 (defn populate-database [db]
-;;  (ndb/transact db
   (add-contact {:name "Kalle Karlsson" :emails ["kalle@karlsson.se"]})
   (add-contact {:name "Sven Svensson"  :emails ["sven@svensson.se" "sven@hotmail.com"]})
   (add-contact {:name "Olle Olsson"    :emails []})
@@ -95,28 +92,6 @@
       (log/d "fn: initialize: Populate")
       (populate-database db))
     ))
-
-;; (defn get-contact-name-list [contact-db]
-;;   (let [real-contact-db (get-db)
-;;         contact-seq (ndb/query-seq real-contact-db [:contacts/name] [:contacts] nil)]
-;;     (into [] (for [contact contact-seq] (:contacts/name contact)))
-;;     ;;(list (str (into [] contact-seq))) ;; Just display the db response as a string on a single line
-;;     ))
-
-
-
-
-;; (defn make-contact-list-adapter []
-;;   (ref-adapter
-;;    (fn [_] [:linear-layout {:id-holder true}
-;;             [:text-view {:id ::caption-tv}]])
-;;    (fn [position view _ data]
-;;      (let [tv (find-view view ::caption-tv)]
-;;        ;;(config tv :text (str position ". " data))
-;;        (config tv :text (str data))
-;;        ))
-;;    (get-db-atom)
-;;    get-contact-name-list))
 
 (defn get-contact-emails [contact-id]
   (let [emails-seq (ndb/query-seq (get-db) :emails {:contact_id contact-id})]
@@ -152,5 +127,4 @@
    (fn []
      (log/d "fn: cursor-fn")
      (contact-list-cursor-fn))))
-
 

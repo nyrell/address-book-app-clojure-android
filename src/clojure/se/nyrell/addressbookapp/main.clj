@@ -15,15 +15,13 @@
              ])
   (:import android.widget.EditText)
   (:import [android.widget TextView ListView]
-           (android.app Activity)
-           ))
+           (android.app Activity))
+  (:import [neko.ui.adapters.TaggedCursorAdapter]))
 
 
 ;; We execute this function to import all subclasses of R class. This gives us
 ;; access to all application resources.
 (res/import-all)
-
-
 
 
 (defn gui-add-contact [activity]
@@ -43,13 +41,36 @@
         ]
     (log/d "Add contact: " contact-map)
     (db/add-contact contact-map)
-    (update-cursor (.getAdapter ^ListView (find-view activity ::contact-list-view)))
+    (let [adapter (.getAdapter ^ListView (find-view activity ::contact-list-view))]
+      (when (instance? neko.ui.adapters.TaggedCursorAdapter adapter)
+        (update-cursor adapter)))
     ))
 
 (defn gui-delete-all-contacts [activity]
   (db/delete-all-contacts))
 
 
+;; Only for sqlitedb
+(defn log-debug-info-for-cursor []
+  (log/d "fn: log-debug-info-for-cursor")
+  ;; (let [cursor         (db/contact-list-cursor-fn)
+  ;;       row-count      (.getCount cursor)
+  ;;       col-count      (.getColumnCount cursor)
+  ;;       col-names-java (.getColumnNames cursor)
+  ;;       col-names      (str (into [] (for [col-name col-names-java] (str col-name))))
+  ;;       ]
+  ;;   (log/d "Cursor test:")
+  ;;   (log/d "Rows:" row-count)
+  ;;   (log/d "Cols:" col-count)
+  ;;   (log/d "Col names:" col-names)
+  ;;   (.moveToFirst cursor)
+  ;;   (log/d (str (ndb/entity-from-cursor cursor)))
+  ;;   (.moveToNext cursor)
+  ;;   (log/d (str (ndb/entity-from-cursor cursor)))
+  ;;   (.moveToNext cursor)
+  ;;   (log/d (str (ndb/entity-from-cursor cursor))))
+  (log/d "fn: log-debug-info-for-cursor: Finished"))
+  
 (defactivity se.nyrell.addressbookapp.MainActivity
   :key :main
 
@@ -57,26 +78,8 @@
             (.superOnCreate this bundle)
             (neko.debug/keep-screen-on this)
             (db/initialize)
-            (log/d "fn: onCreate: 1")
-            ;; (let [cursor         (db/contact-list-cursor-fn)
-            ;;       row-count      (.getCount cursor)
-            ;;       col-count      (.getColumnCount cursor)
-            ;;       col-names-java (.getColumnNames cursor)
-            ;;       col-names      (str (into [] (for [col-name col-names-java] (str col-name))))
-            ;;       ]
-            ;;   (log/d "Cursor test:")
-            ;;   (log/d "Rows:" row-count)
-            ;;   (log/d "Cols:" col-count)
-            ;;   (log/d "Col names:" col-names)
-            ;;   (.moveToFirst cursor)
-            ;;   (log/d (str (ndb/entity-from-cursor cursor)))
-            ;;   (.moveToNext cursor)
-            ;;   (log/d (str (ndb/entity-from-cursor cursor)))
-            ;;   (.moveToNext cursor)
-            ;;   (log/d (str (ndb/entity-from-cursor cursor)))
-            ;;   )
-              
-            (log/d "fn: onCreate: 2")
+            (log/d "fn: onCreate")
+            ;;(log-debug-info-for-cursor)  
             (on-ui
              (set-content-view! (*a)
                                 [:linear-layout {:orientation :vertical
@@ -87,12 +90,15 @@
                                               :on-item-click (fn [^ListView parent, view position id] (neko.notify/toast (str "Clicked! " id)))
                                               :id ::contact-list-view}]
                                  [:text-view {:text "New contact:"}]
+                                 
                                  [:linear-layout {:orientation :horizontal}
                                   [:text-view {:text "  Name:"}]
                                   [:edit-text {:text "" :hint "Type name here." :id ::input-contact-name}]]
+                                 
                                  [:linear-layout {:orientation :horizontal}
                                   [:text-view {:text "  E-mail:"}]
-                                  [:edit-text {:text "" :hint "Type email here. (comma separated)!" :id ::input-contact-email}]]
+                                  [:edit-text {:text "" :hint "Type email here. (comma separated)" :id ::input-contact-email}]]
+                                 
                                  [:button {:text "Add contact!"
                                            :on-click (fn [^android.widget.Button b]
                                                        (gui-add-contact (*a))
