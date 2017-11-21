@@ -20,7 +20,6 @@ If your environment is setup correctly, just build and run with:
 lein droid doall
 
 
-
 There are two possible backends used for the DB:
 
 * A simple atom list used together with the ref-adapter.
