@@ -8,14 +8,30 @@ The main sources used to learn how to do this was:
 
 * The source code for 4Clojure: https://github.com/alexander-yakushev/foreclojure-android
 
-
+* Android App Development with Clojure: https://github.com/alexander-yakushev/events/blob/master/tutorial.md
 
 
 ## Usage
 
-Build and run with:
+Setup your Clojure/Android environment according to information here: http://clojure-android.info/
+
+If your environment is setup correctly, just build and run with:
 
 lein droid doall
+
+
+
+There are two possible backends used for the DB:
+
+* A simple atom list used together with the ref-adapter.
+* A sqlite db used together with the cursor-adapter.
+
+You can switch between these just by selecting wich one to "require" from main.clj. 
+
+Example: 
+[dummy-db :as db]  ;; Use the atom list "db"
+[sqlite-db :as db] ;; Use sqlite
+
 
 ## License
 
