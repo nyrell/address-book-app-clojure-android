@@ -28,10 +28,11 @@ There are two possible backends used for the DB:
 
 You can switch between these just by selecting wich one to "require" from main.clj. 
 
+```
 Example: 
 [dummy-db :as db]  ;; Use the atom list "db"
 [sqlite-db :as db] ;; Use sqlite
-
+```
 
 ## License
 
